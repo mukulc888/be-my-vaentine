@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Be My Valentine? ❤️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #ffe6e6;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            /* Prevents weird highlights when tapping fast on mobile */
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        #tag-zone {
+            position: fixed;
+            top: 8%;
+            height: 80px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .floating-tag {
+            color: #d63384;
+            font-weight: bold;
+            font-size: 1.6rem;
+            animation: fadeInOut 2s forwards;
+            position: absolute;
+            width: 100%;
+            left: 0;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0px); }
+            85% { opacity: 1; transform: translateY(0px); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        #question-container {
+            text-align: center;
+            max-width: 90%;
+            z-index: 5;
+        }
+
+        h1 {
+            color: #d63384;
+            font-size: 2rem;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            touch-action: none; /* Critical for mobile */
+        }
+
+        #yesBtn {
+            background-color: #ff4d6d;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .wiggle {
+            animation: wiggle 0.3s ease infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(6deg); }
+            75% { transform: rotate(-6deg); }
+        }
+
+        #noBtn {
+            background-color: #6c757d;
+            color: white;
+            transition: all 0.2s ease-out;
+            position: relative;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #celebration h1 {
+            font-size: 3rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="tag-zone"></div>
+
+    <div id="question-container">
+        <h1>Bubba, My Lil princess and the most precious thing,<br>Will you be my Valentine? ❤️</h1>
+        <div class="buttons">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div id="celebration" class="hidden">
+        <h1>YAY! 🥰 See you then! 🌹</h1>
+        <p style="font-size: 1.5rem; color: #ff4d6d;">(I knew you couldn't resist!)</p>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const tagZone = document.getElementById('tag-zone');
+        const questionContainer = document.getElementById('question-container');
+        const celebration = document.getElementById('celebration');
+
+        const phrases = [
+            "Nice try! 😉", "Wrong button! ✨", "Not today! 🏃‍♂️", 
+            "Try again! ❤️", "Too slow! 🐌", "You sure? 🥺", 
+            "Keep trying! 🎀", "Finger slipped? 🤔", "Nope! 😋"
+        ];
+
+        let canShowTag = true;
+        let hasMoved = false;
+        let yesSize = 1;
+
+        function showTopTag() {
+            if (!canShowTag) return;
+            canShowTag = false;
+            tagZone.innerHTML = '';
+            const tag = document.createElement('div');
+            tag.className = 'floating-tag';
+            tag.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+            tagZone.appendChild(tag);
+            setTimeout(() => { canShowTag = true; }, 1500);
+            setTimeout(() => tag.remove(), 2000);
+        }
+
+        function moveButton() {
+            if (!hasMoved) {
+                noBtn.style.position = 'fixed';
+                hasMoved = true;
+            }
+            
+            showTopTag();
+            yesBtn.classList.add('wiggle');
+            yesSize += 0.001; 
+            yesBtn.style.transform = `scale(${yesSize})`;
+
+            // Random jump for mobile/touch
+            const padding = 50;
+            const newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding * 2) + padding;
+            const newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding * 2) + padding;
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        // Desktop Mouse Move
+        document.addEventListener('mousemove', (e) => {
+            const btnRect = noBtn.getBoundingClientRect();
+            const dx = e.clientX - (btnRect.left + btnRect.width / 2);
+            const dy = e.clientY - (btnRect.top + btnRect.height / 2);
+            const distance = Math.sqrt(dx*dx + dy*dy);
+
+            if (distance < 150) {
+                moveButton();
+            } else {
+                yesBtn.classList.remove('wiggle');
+            }
+        });
+
+        // Mobile Touch Start
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents the actual "click"
+            moveButton();
+        });
+
+        yesBtn.addEventListener('click', () => {
+            questionContainer.classList.add('hidden');
+            celebration.classList.remove('hidden');
+            tagZone.classList.add('hidden');
+            document.body.style.backgroundColor = '#ffb3c1';
+        });
+    </script>
+</body>
+</html>
